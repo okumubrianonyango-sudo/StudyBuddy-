@@ -1,0 +1,18 @@
+{
+  "short_name": "StudyBuddy",
+  "name": "Study Buddy AI: Industrial Chemistry",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3665/3665923.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#121212",
+  "display": "standalone",
+  "scope": "./",
+  "theme_color": "#0d6efd",
+  "description": "Offline-first Lab Assistant for Industrial Chemistry Students."
+}
