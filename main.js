@@ -475,3 +475,38 @@ async function exportLogsToPDF() {
     doc.save(`Chemistry_Logs_${Date.now()}.pdf`);
     showToast("PDF Downloaded!");
 }
+// 1. Load cards from LocalStorage or use defaults if empty
+let thermoCards = JSON.parse(localStorage.getItem('myStudyCards')) || [
+    { q: "First Law of Thermodynamics", a: "Energy cannot be created or destroyed, only transformed (ΔU = Q - W)." },
+    { q: "Hess's Law", a: "The total enthalpy change for a reaction is the same regardless of the number of steps." },
+    { q: "Nitrogen Boiling Point", a: "Approximately -195.8°C (Used in fractional distillation)." }
+];
+
+function addNewCard() {
+    const qInput = document.getElementById('new-q');
+    const aInput = document.getElementById('new-a');
+
+    if (qInput.value.trim() !== "" && aInput.value.trim() !== "") {
+        // Add to the list
+        thermoCards.push({ q: qInput.value, a: aInput.value });
+
+        // 2. SAVE the updated list to LocalStorage
+        localStorage.setItem('myStudyCards', JSON.stringify(thermoCards));
+
+        // UI Updates
+        qInput.value = "";
+        aInput.value = "";
+        currentCardIndex = thermoCards.length - 1;
+        showingAnswer = false;
+        updateCard();
+        alert("Card saved permanently!");
+    } else {
+        alert("Please fill in both fields.");
+    }
+}function resetCards() {
+    if(confirm("Delete all custom cards and reset to defaults?")) {
+        localStorage.removeItem('myStudyCards');
+        location.reload(); // Refresh to reload defaults
+    }
+}
+

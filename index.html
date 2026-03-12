@@ -214,6 +214,36 @@
             <div id="unitResult" class="mt-3 text-center h5 text-success"></div>
         </div>
 
+    <!--Tab to edit-->
+    <div class="container mt-3 mb-3">
+    <div class="card bg-secondary text-white border-0 shadow-sm">
+        <div class="card-body p-3">
+            <h6>Add Custom Study Card</h6>
+            <input type="text" id="new-q" class="form-control form-control-sm mb-2" placeholder="Question (e.g. Molar Mass of N2)">
+            <input type="text" id="new-a" class="form-control form-control-sm mb-2" placeholder="Answer (e.g. 28.01 g/mol)">
+            <button class="btn btn-success btn-sm w-100" onclick="addNewCard()">Add to Deck</button>
+        </div>
+    </div>
+</div>
+<div class="text-center mt-2">
+    <a href="#" class="text-danger small" onclick="resetCards()">Reset all cards</a>
+</div>
+
+<div id="quiz-section" class="container mt-4">
+    <div class="card bg-dark text-white shadow">
+        <div class="card-header border-secondary text-center">
+            <h5>Thermo Quizzer</h5>
+        </div>
+        <div class="card-body text-center" id="flashcard" style="min-height: 150px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+            <h4 id="card-text">Tap to start studying!</h4>
+        </div>
+        <div class="card-footer d-flex justify-content-between border-secondary">
+            <button class="btn btn-outline-info btn-sm" onclick="prevCard()">Previous</button>
+            <button class="btn btn-primary btn-sm" onclick="nextCard()">Next Card</button>
+        </div>
+    </div>
+</div>
+
     </div> <!-- End Chem Tab -->
 
 </div> <!-- End Container -->
