@@ -531,4 +531,9 @@ function deleteCurrentCard() {
         updateCard();
     }
 }
+// Display the current date/time the app script initialized
+const updateEl = document.getElementById('last-update');
+if(updateEl) {
+    updateEl.innerText = "Updated: " + new Date().toLocaleString();
+}
 
