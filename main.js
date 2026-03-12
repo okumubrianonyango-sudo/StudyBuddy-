@@ -509,4 +509,26 @@ function addNewCard() {
         location.reload(); // Refresh to reload defaults
     }
 }
+function deleteCurrentCard() {
+    if (thermoCards.length <= 1) {
+        alert("You must keep at least one card in your deck!");
+        return;
+    }
+
+    if (confirm("Are you sure you want to delete this card?")) {
+        // Remove 1 item at the current index
+        thermoCards.splice(currentCardIndex, 1);
+
+        // Save the new, smaller list to LocalStorage
+        localStorage.setItem('myStudyCards', JSON.stringify(thermoCards));
+
+        // Adjust index if we deleted the last card
+        if (currentCardIndex >= thermoCards.length) {
+            currentCardIndex = thermoCards.length - 1;
+        }
+
+        showingAnswer = false;
+        updateCard();
+    }
+}
 
