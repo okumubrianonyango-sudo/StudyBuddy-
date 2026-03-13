@@ -481,6 +481,48 @@ let thermoCards = JSON.parse(localStorage.getItem('myStudyCards')) || [
     { q: "Hess's Law", a: "The total enthalpy change for a reaction is the same regardless of the number of steps." },
     { q: "Nitrogen Boiling Point", a: "Approximately -195.8°C (Used in fractional distillation)." }
 ];
+// --- MISSING ENGINE PIECES ---
+let currentCardIndex = 0;
+let showingAnswer = false;
+
+function updateCard() {
+    const display = document.getElementById('card-text');
+    if (!display) return; // Safety check
+    
+    if (showingAnswer) {
+        display.innerText = thermoCards[currentCardIndex].a;
+        display.classList.add('text-info');
+    } else {
+        display.innerText = thermoCards[currentCardIndex].q;
+        display.classList.remove('text-info');
+    }
+}
+
+// Logic to flip the card when you tap it
+document.addEventListener('DOMContentLoaded', () => {
+    const cardElement = document.getElementById('flashcard');
+    if (cardElement) {
+        cardElement.addEventListener('click', () => {
+            showingAnswer = !showingAnswer;
+            updateCard();
+        });
+    }
+    // Initialize the first card display
+    updateCard();
+});
+
+function nextCard() {
+    currentCardIndex = (currentCardIndex + 1) % thermoCards.length;
+    showingAnswer = false;
+    updateCard();
+}
+
+function prevCard() {
+    currentCardIndex = (currentCardIndex - 1 + thermoCards.length) % thermoCards.length;
+    showingAnswer = false;
+    updateCard();
+}
+// -----------------------------
 
 function addNewCard() {
     const qInput = document.getElementById('new-q');
@@ -503,7 +545,7 @@ function addNewCard() {
     } else {
         alert("Please fill in both fields.");
     }
-}function resetCards() {
+    {Enter}function resetCards() {
     if(confirm("Delete all custom cards and reset to defaults?")) {
         localStorage.removeItem('myStudyCards');
         location.reload(); // Refresh to reload defaults
