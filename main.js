@@ -569,13 +569,24 @@ function toggleFullScreenNote() {
 
     if (!noteArea.classList.contains('full-screen-note')) {
         noteArea.classList.add('full-screen-note');
-        btn.innerHTML = '<i class="fas fa-compress"></i> Exit';
+        // Update button text and style
+        btn.innerHTML = '<i class="fas fa-compress"></i> Exit & Save';
         btn.classList.replace('btn-light', 'btn-danger');
+        
+        // This is the fix: make the button float on top of the full screen
         btn.style.position = 'fixed';
+        btn.style.top = '10px';
+        btn.style.right = '10px';
+        btn.style.zIndex = '10000'; 
     } else {
         noteArea.classList.remove('full-screen-note');
         btn.innerHTML = '<i class="fas fa-expand"></i> Full Screen';
         btn.classList.replace('btn-danger', 'btn-light');
+        
+        // Reset button back to its normal spot in the card
         btn.style.position = 'absolute';
+        btn.style.top = '0';
+        btn.style.right = '0';
+        btn.style.zIndex = '10';
     }
 }
