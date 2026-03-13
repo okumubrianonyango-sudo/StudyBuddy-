@@ -563,3 +563,19 @@ const updateEl = document.getElementById('last-update');
 if(updateEl) {
     updateEl.innerText = "Updated: " + new Date().toLocaleString();
 }
+function toggleFullScreenNote() {
+    const noteArea = document.getElementById('noteContent');
+    const btn = event.currentTarget;
+
+    if (!noteArea.classList.contains('full-screen-note')) {
+        noteArea.classList.add('full-screen-note');
+        btn.innerHTML = '<i class="fas fa-compress"></i> Exit';
+        btn.classList.replace('btn-light', 'btn-danger');
+        btn.style.position = 'fixed';
+    } else {
+        noteArea.classList.remove('full-screen-note');
+        btn.innerHTML = '<i class="fas fa-expand"></i> Full Screen';
+        btn.classList.replace('btn-danger', 'btn-light');
+        btn.style.position = 'absolute';
+    }
+}

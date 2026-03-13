@@ -28,6 +28,19 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         #toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 20px; border-radius: 25px; display: none; z-index: 1000; white-space: nowrap; }
         .navbar { border-top: 1px solid var(--border); }
+        .full-screen-note {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh !important;
+    z-index: 9999;
+    padding: 20px;
+    font-size: 1.2rem;
+    border-radius: 0 !important;
+    background: white !important;
+}
+
     </style>
 </head>
 <body>
@@ -48,28 +61,47 @@
     <!-- TAB 1: NOTES & SCANNER -->
    <div id="notesTab" class="tab-content d-none">
        
-        <div class="card p-4 mb-4 shadow-sm">
-            <label class="btn btn-info text-white w-100 mb-2 fw-bold shadow-sm">
-                📸 Scan Lab Notes
-                <input type="file" id="cameraInput" accept="image/*" capture="camera" hidden onchange="scanImage()">
-            </label>
-            <div id="scanStatus" class="text-center small mb-3 text-muted">Ready to scan...</div>
-            
-            <input type="text" id="noteTitle" class="form-control mb-3" placeholder="Subject (e.g. Thermodynamics)">
-            
-            <div class="mb-2 d-flex justify-content-between align-items-center">
-                <label class="small text-muted fw-bold">Content</label>
-                <button class="btn btn-sm btn-outline-danger border-0" id="micBtn" onclick="toggleDictation()">🎤 Start Dictation</button>
-            </div>
-            <textarea id="noteContent" class="form-control mb-3" rows="4" placeholder="Speak or type observations..."></textarea>
-            
+            <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">New Lab Entry</h5>
+        </div>
+        <div class="card-body">
             <div class="mb-3">
-                <label class="small text-muted fw-bold mb-1">Attach Lab Photo</label>
-                <input type="file" id="labPhotoInput" class="form-control form-control-sm" accept="image/*">
+                <input type="text" id="noteTitle" class="form-control form-control-lg border-0 bg-light" placeholder="Subject (e.g. Thermodynamics)">
+            </div>
+            
+            <div class="mb-3 position-relative">
+                <button class="btn btn-sm btn-light position-absolute top-0 end-0 m-2 shadow-sm" 
+                        onclick="toggleFullScreenNote()" 
+                        style="z-index: 10;">
+                    <i class="fas fa-expand"></i> Full Screen
+                </button>
+                
+                <textarea id="noteContent" class="form-control border-0 bg-light" 
+                          style="height: 300px; resize: none;" 
+                          placeholder="Speak or type observations..."></textarea>
             </div>
 
-            <button class="btn btn-primary w-100 fw-bold shadow-sm" onclick="saveNote()">💾 Save Session</button>
+            <div class="mb-3">
+                <label class="small text-muted fw-bold mb-1">Attach Lab Photo</label>
+                <input type="file" id="labPhotoInput" class="form-control form-control-sm border-0 bg-light" accept="image/*">
+            </div>
+
+            <div class="d-grid gap-2">
+                <button class="btn btn-primary fw-bold shadow-sm" onclick="saveNote()">
+                    💾 Save Session
+                </button>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-secondary btn-sm w-100" onclick="toggleDictation()">🎤 Voice</button>
+                    <label class="btn btn-outline-secondary btn-sm w-100 mb-0">
+                        📷 Scan <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden onchange="scanImage()">
+                    </label>
+                </div>
+                <small id="scanStatus" class="text-center text-muted small"></small>
+            </div>
         </div>
+    </div>
+
     <!-- Header with Export Button -->
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h6 class="fw-bold text-secondary mb-0">Recent Logs</h6>
