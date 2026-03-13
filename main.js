@@ -14,7 +14,6 @@ function showTab(tabId) {
     }
 }
 
-
 // ==========================================
 // 1. INITIALIZATION & SERVICE WORKER
 // ==========================================
@@ -37,7 +36,6 @@ window.onload = () => {
     showTab('chemTab');
     displayConstants();
 };
-
 
 // ==========================================
 // 2. GLOBAL DATA & DATABASE SETUP
@@ -79,8 +77,6 @@ dbRequest.onsuccess = (e) => {
 // ==========================================
 // 3. CORE NAVIGATION & UI
 // ==========================================
-
-
 function toggleTheme() {
     const isDark = document.getElementById('themeSwitch').checked;
     document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
@@ -203,7 +199,6 @@ function viewPhoto(noteId) {
 // ==========================================
 // 5. CHEMISTRY TOOLS & CALCULATIONS
 // ==========================================
-
 function calculateMolarMass() {
     const formulaInput = document.getElementById('chemFormula');
     const resultDisplay = document.getElementById('chemResult');
@@ -326,19 +321,16 @@ function convertUnits() {
 
     if (isNaN(val)) return;
 
-    // 1. Temperature Logic (Non-multiplicative)
     if ((from === 'C' || from === 'K') && (to === 'C' || to === 'K')) {
         let res = (from === 'C' && to === 'K') ? val + 273.15 : (from === 'K' && to === 'C' ? val - 273.15 : val);
         display.innerHTML = `<b>${res.toFixed(2)} ${to}</b>`;
         return;
     }
 
-    // 2. Multiplicative Factors (Relative to base units: J, atm, L)
     const energyFactors = { J: 1, kJ: 1000, cal: 4.184, kcal: 4184 };
     const pressureFactors = { atm: 1, psi: 0.068046, bar: 0.986923, kPa: 0.009869, torr: 0.00131579 };
     const volumeFactors = { L: 1, mL: 0.001, m3: 1000 };
 
-    // 3. Match the Category
     let factors = null;
     if (energyFactors[from] && energyFactors[to]) factors = energyFactors;
     else if (pressureFactors[from] && pressureFactors[to]) factors = pressureFactors;
@@ -349,18 +341,13 @@ function convertUnits() {
         return;
     }
 
-    // 4. Calculate: (Value * From-Factor) / To-Factor
     const result = (val * factors[from]) / factors[to];
-    
-    // Using toPrecision(5) is better for very small or very large chemistry values
     display.innerHTML = `<b>${result.toPrecision(5)} ${to}</b>`;
 }
-
 
 // ==========================================
 // 6. AI, VOICE & OCR
 // ==========================================
-
 async function scanImage() {
     const status = document.getElementById('scanStatus');
     const file = document.getElementById('cameraInput').files[0];
@@ -423,7 +410,12 @@ function predictOutcome() {
         resultDiv.innerHTML = `<div class="p-3 bg-light border-start border-success border-4 mt-2 h3">${yieldVal}% Yield</div>`;
     }, 1200);
 }
+
 async function exportLogsToPDF() {
+    if (typeof window.jspdf === 'undefined') {
+        showToast("PDF library is loading or unavailable.");
+        return;
+    }
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     const notes = JSON.parse(localStorage.getItem('studyNotes')) || [];
@@ -433,61 +425,59 @@ async function exportLogsToPDF() {
         return;
     }
 
-    // Header Styles
     doc.setFontSize(18);
-    doc.setTextColor(13, 110, 253); // Professional Blue
+    doc.setTextColor(13, 110, 253); 
     doc.text("Study Buddy: Industrial Chemistry Logs", 10, 20);
     
     doc.setFontSize(10);
     doc.setTextColor(100);
     doc.text(`Generated on: ${new Date().toLocaleString()}`, 10, 28);
-    doc.line(10, 30, 200, 30); // Horizontal line
+    doc.line(10, 30, 200, 30); 
 
     let yOffset = 40;
 
     notes.forEach((note, index) => {
-        // Check if we need a new page
         if (yOffset > 270) {
             doc.addPage();
             yOffset = 20;
         }
 
-        // Note Title
         doc.setFontSize(14);
         doc.setTextColor(0);
         doc.setFont("helvetica", "bold");
         doc.text(`${index + 1}. ${note.title}`, 10, yOffset);
         
-        // Date
         doc.setFontSize(10);
         doc.setFont("helvetica", "normal");
         doc.setTextColor(150);
         doc.text(`Date: ${note.date}`, 10, yOffset + 7);
 
-        // Content
         doc.setTextColor(50);
         const splitText = doc.splitTextToSize(note.content, 180);
         doc.text(splitText, 10, yOffset + 15);
 
-        yOffset += (splitText.length * 7) + 25; // Dynamic spacing
+        yOffset += (splitText.length * 7) + 25; 
     });
 
     doc.save(`Chemistry_Logs_${Date.now()}.pdf`);
     showToast("PDF Downloaded!");
 }
-// 1. Load cards from LocalStorage or use defaults if empty
+
+// ==========================================
+// 7. FLASHCARD ENGINE (FIXED)
+// ==========================================
 let thermoCards = JSON.parse(localStorage.getItem('myStudyCards')) || [
     { q: "First Law of Thermodynamics", a: "Energy cannot be created or destroyed, only transformed (ΔU = Q - W)." },
     { q: "Hess's Law", a: "The total enthalpy change for a reaction is the same regardless of the number of steps." },
     { q: "Nitrogen Boiling Point", a: "Approximately -195.8°C (Used in fractional distillation)." }
 ];
-// --- MISSING ENGINE PIECES ---
+
 let currentCardIndex = 0;
 let showingAnswer = false;
 
 function updateCard() {
     const display = document.getElementById('card-text');
-    if (!display) return; // Safety check
+    if (!display) return; 
     
     if (showingAnswer) {
         display.innerText = thermoCards[currentCardIndex].a;
@@ -498,7 +488,6 @@ function updateCard() {
     }
 }
 
-// Logic to flip the card when you tap it
 document.addEventListener('DOMContentLoaded', () => {
     const cardElement = document.getElementById('flashcard');
     if (cardElement) {
@@ -507,7 +496,6 @@ document.addEventListener('DOMContentLoaded', () => {
             updateCard();
         });
     }
-    // Initialize the first card display
     updateCard();
 });
 
@@ -522,20 +510,17 @@ function prevCard() {
     showingAnswer = false;
     updateCard();
 }
-// -----------------------------
 
 function addNewCard() {
+    alert("Button was clicked!"); // Add this line temporarily
     const qInput = document.getElementById('new-q');
+    // ... rest of the code
     const aInput = document.getElementById('new-a');
 
     if (qInput.value.trim() !== "" && aInput.value.trim() !== "") {
-        // Add to the list
         thermoCards.push({ q: qInput.value, a: aInput.value });
-
-        // 2. SAVE the updated list to LocalStorage
         localStorage.setItem('myStudyCards', JSON.stringify(thermoCards));
 
-        // UI Updates
         qInput.value = "";
         aInput.value = "";
         currentCardIndex = thermoCards.length - 1;
@@ -545,12 +530,15 @@ function addNewCard() {
     } else {
         alert("Please fill in both fields.");
     }
-    {Enter}function resetCards() {
+} // <--- The missing closing brace was added here!
+
+function resetCards() {
     if(confirm("Delete all custom cards and reset to defaults?")) {
         localStorage.removeItem('myStudyCards');
-        location.reload(); // Refresh to reload defaults
+        location.reload(); 
     }
 }
+
 function deleteCurrentCard() {
     if (thermoCards.length <= 1) {
         alert("You must keep at least one card in your deck!");
@@ -558,13 +546,9 @@ function deleteCurrentCard() {
     }
 
     if (confirm("Are you sure you want to delete this card?")) {
-        // Remove 1 item at the current index
         thermoCards.splice(currentCardIndex, 1);
-
-        // Save the new, smaller list to LocalStorage
         localStorage.setItem('myStudyCards', JSON.stringify(thermoCards));
 
-        // Adjust index if we deleted the last card
         if (currentCardIndex >= thermoCards.length) {
             currentCardIndex = thermoCards.length - 1;
         }
@@ -573,9 +557,9 @@ function deleteCurrentCard() {
         updateCard();
     }
 }
+
 // Display the current date/time the app script initialized
 const updateEl = document.getElementById('last-update');
 if(updateEl) {
     updateEl.innerText = "Updated: " + new Date().toLocaleString();
 }
-
