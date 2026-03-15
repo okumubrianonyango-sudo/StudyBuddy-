@@ -161,15 +161,20 @@ function displayNotes() {
         return;
     }
     list.innerHTML = notes.map(n => `
-        <div class="card p-3 mb-2 shadow-sm border-0">
-            <div class="d-flex justify-content-between">
-                <h6 class="fw-bold text-primary mb-1">${n.title}</h6>
-                <button class="btn btn-sm text-danger border-0 p-0" onclick="deleteNote(${n.id})">🗑️</button>
-            </div>
-            <p class="small text-secondary mb-2">${n.content}</p>
-            <button class="btn btn-sm btn-outline-info w-100" onclick="viewPhoto(${n.id})">🖼️ View Photo</button>
+    <div class="card p-3 mb-2 shadow-sm border-0 position-relative">
+        <button class="btn btn-sm text-danger position-absolute top-0 end-0 m-1" 
+                onclick="deleteNote(${n.id})" style="z-index: 5;">
+            <i class="fas fa-trash"></i>
+        </button>
+        
+        <h6 class="fw-bold text-primary mb-1 pe-4">${n.title}</h6>
+        <p class="small text-secondary mb-2">${n.content.substring(0, 100)}${n.content.length > 100 ? '...' : ''}</p>
+        
+        <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-info flex-grow-1" onclick="viewPhoto(${n.id})">🖼️ View Photo</button>
         </div>
-    `).join('');
+    </div>
+`).join('');
 }
 
 function deleteNote(noteId) {
@@ -433,28 +438,191 @@ function toggleDictation() {
     recognition.start();
 }
 
+// ==========================================
+// MULTI-QUESTION AI QUIZ GENERATOR
+// ==========================================
 function generateAIQuiz() {
     const notes = JSON.parse(localStorage.getItem('studyNotes')) || [];
     if (notes.length === 0) return showToast("Save lab notes first!");
+    
     const container = document.getElementById('quizContainer');
     const content = document.getElementById('quizContent');
-    container.classList.remove('d-none');
     const latest = notes[0];
-    content.innerHTML = `
-        <p class="small text-muted">Quiz on: <b>${latest.title}</b></p>
-        <p>Based on: <i>"${latest.content.substring(0, 60)}..."</i></p>
-        <p class="fw-bold">What is the safety protocol for this?</p>
-        <textarea id="quizAnswer" class="form-control mb-2"></textarea>
-        <button class="btn btn-sm btn-success w-100" onclick="checkQuiz()">Submit</button>
+    const text = latest.content.toLowerCase();
+
+    // Categorized Knowledge Base 
+    const knowledgeBase = {
+        thermodynamics: {
+            keywords: ["enthalpy", "entropy", "gibbs", "exothermic", "endothermic", "isothermal", "adiabatic", "calorimetry", "hess"],
+            templates: [
+                "How does the change in {subject} drive the spontaneity of this reaction?",
+                "Explain the energy transfer associated with the {subject} observed in your notes."
+            ]
+        },
+        organic: {
+            keywords: ["alkane", "alkene", "benzene", "alcohol", "phenol", "carboxylic", "ester", "polymer", "nucleophile", "substitution"],
+            templates: [
+                "Identify the role of the {subject} functional group or mechanism in this reaction.",
+                "How does the molecular structure of the {subject} affect its chemical properties?"
+            ]
+        },
+        blockElements: {
+            keywords: ["alkali", "transition metal", "lanthanide", "halogen", "electronegativity", "oxidation state", "ligand"],
+            templates: [
+                "Based on periodic trends, why does the {subject} exhibit these specific properties?",
+                "Explain the role of the {subject} in complex formation or overall reactivity."
+            ]
+        },
+        colloidal: {
+            keywords: ["colloid", "aerosol", "emulsion", "micelle", "adsorption", "surfactant", "tyndall"],
+            templates: [
+                "What factors stabilize the {subject} mentioned in your observation?",
+                "How would changing temperature or pressure affect the {subject} in an industrial setting?"
+            ]
+        },
+        kinetics: {
+            keywords: ["rate", "catalyst", "activation energy", "half-life", "equilibrium", "arrhenius"],
+            templates: [
+                "How did the {subject} influence the overall speed of the chemical reaction?",
+                "Based on your notes, describe the rate-determining step involving the {subject}."
+            ]
+        },
+        separation: {
+            keywords: ["distillation", "fractional", "chromatography", "extraction", "filtration", "crystallization"],
+            templates: [
+                "Why was {subject} the most appropriate technique for this specific mixture?",
+                "What physical property does {subject} primarily exploit in this scenario?"
+            ]
+        }
+    };
+
+    let allMatches = [];
+
+    // Step 1: Find ALL matching keywords across all categories
+    for (const [category, data] of Object.entries(knowledgeBase)) {
+        const matches = data.keywords.filter(word => text.includes(word));
+        matches.forEach(match => {
+            allMatches.push({ category: category, keyword: match, templates: data.templates });
+        });
+    }
+
+    // Step 2: Shuffle the matches so the quiz is different every time
+    allMatches = allMatches.sort(() => 0.5 - Math.random());
+
+    // Step 3: Pick up to 3 unique questions
+    let generatedQuestions = [];
+    let maxQuestions = 3; 
+    let selectedKeywords = new Set(); // To prevent asking about the same word twice
+
+    for (let i = 0; i < allMatches.length; i++) {
+        let match = allMatches[i];
+        if (!selectedKeywords.has(match.keyword)) {
+            selectedKeywords.add(match.keyword);
+            let rawQ = match.templates[Math.floor(Math.random() * match.templates.length)];
+            generatedQuestions.push(rawQ.replace("{subject}", `<span class="text-primary fw-bold">${match.keyword}</span>`));
+        }
+        if (generatedQuestions.length >= maxQuestions) break;
+    }
+
+    // Step 4: Fallback if notes are too short/don't have keywords
+    if (generatedQuestions.length === 0) {
+        generatedQuestions.push(`What are the key sources of error for "<b>${latest.title}</b>"?`);
+        generatedQuestions.push(`What is the most important industrial application of this procedure?`);
+    }
+
+    // Step 5: Build the UI for Multiple Questions
+    container.classList.remove('d-none');
+    
+    let quizHTML = `
+        <div class="p-3 bg-light border-start border-primary border-4 mb-3 shadow-sm">
+            <p class="small text-muted mb-3"><i class="fas fa-brain"></i> AI Analysis of: <b>${latest.title}</b></p>
     `;
+
+    // Loop through and create a text box for each question
+    generatedQuestions.forEach((q, index) => {
+        quizHTML += `
+            <div class="mb-3">
+                <p class="mb-1 fw-bold" style="font-size: 1.05rem;">Q${index + 1}: ${q}</p>
+                <textarea id="quizAnswer_${index}" class="form-control border-secondary" style="height: 80px; resize: none;" placeholder="Type your answer..."></textarea>
+            </div>
+        `;
+    });
+
+    quizHTML += `
+        </div>
+        <button class="btn btn-primary w-100 fw-bold shadow-sm" onclick="checkMultipleQuiz(${generatedQuestions.length})">
+            Submit Exam (${generatedQuestions.length} Questions)
+        </button>
+    `;
+
+    content.innerHTML = quizHTML;
 }
 
-function checkQuiz() {
-    if (document.getElementById('quizAnswer').value.length < 5) showToast("Write more!");
-    else { showToast("Great job!"); closeQuiz(); }
+// ==========================================
+// VALIDATE MULTIPLE ANSWERS
+// ==========================================
+function checkMultipleQuiz(questionCount) {
+    let allValid = true;
+
+    // Loop through all generated text boxes to check if they are filled
+    for (let i = 0; i < questionCount; i++) {
+        let answerBox = document.getElementById(`quizAnswer_${i}`);
+        let answerText = answerBox.value.trim();
+
+        if (answerText.length < 10) {
+            allValid = false;
+            answerBox.classList.add('border-danger'); // Highlight empty boxes in red
+        } else {
+            answerBox.classList.remove('border-danger');
+            answerBox.classList.add('border-success'); // Highlight good answers in green
+        }
+    }
+
+    if (!allValid) {
+        showToast("Please provide a detailed explanation for ALL questions!");
+        return;
+    }
+    
+    showToast("Excellent analysis! 100% Score.");
+    setTimeout(closeQuiz, 1500);
 }
 
-function closeQuiz() { document.getElementById('quizContainer').classList.add('d-none'); }
+// ==========================================
+// 2. SINGLE & BULK NOTE DELETION
+// ==========================================
+
+// Deletes one specific log
+function deleteNote(noteId) {
+    if (!confirm("Delete this specific log?")) return;
+
+    let notes = JSON.parse(localStorage.getItem('studyNotes')) || [];
+    notes = notes.filter(n => n.id !== noteId);
+    localStorage.setItem('studyNotes', JSON.stringify(notes));
+
+    // Also remove the associated photo from database
+    if (db) {
+        const transaction = db.transaction(["labPhotos"], "readwrite");
+        transaction.objectStore("labPhotos").delete(noteId);
+    }
+
+    displayNotes();
+    showToast("Log removed.");
+}
+
+// Clears all logs at once
+function clearAllNotes() {
+    if (!confirm("CRITICAL: This will delete ALL lab logs permanently. Proceed?")) return;
+
+    localStorage.removeItem('studyNotes');
+    
+    if (db) {
+        const transaction = db.transaction(["labPhotos"], "readwrite");
+        transaction.objectStore("labPhotos").clear();
+    }
+
+    displayNotes();
+    showToast("Notebook cleared.");
+}
 
 function predictOutcome() {
     const temp = parseFloat(document.getElementById('predTemp').value);
