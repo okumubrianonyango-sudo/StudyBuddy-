@@ -350,29 +350,87 @@ function convertUnits() {
 // ==========================================
 async function scanImage() {
     const status = document.getElementById('scanStatus');
-    const file = document.getElementById('cameraInput').files[0];
+    const cameraInput = document.getElementById('cameraInput');
+    const file = cameraInput.files[0];
+    
     if (!file) return;
-    status.innerText = "⏳ AI Reading...";
+
+    status.innerHTML = `<span class="spinner-border spinner-border-sm text-primary"></span> AI Processing...`;
+    
     try {
-        const worker = await Tesseract.createWorker('eng');
+        // We create the worker with specific parameters for better accuracy
+        const worker = await Tesseract.createWorker('eng', 1, {
+            logger: m => {
+                if(m.status === 'recognizing text') {
+                    status.innerText = `Reading: ${Math.round(m.progress * 100)}%`;
+                }
+            }
+        });
+
+        // Set parameters to handle "blocks" of text better (PSM 1 or 3)
+        await worker.setParameters({
+            tessedit_pageseg_mode: Tesseract.PSM.AUTO, 
+        });
+
         const { data: { text } } = await worker.recognize(file);
-        document.getElementById('noteContent').value += (document.getElementById('noteContent').value ? '\n' : '') + text;
-        status.innerText = "✅ Done";
+        
+        if (text.trim().length > 0) {
+            const noteArea = document.getElementById('noteContent');
+            noteArea.value += (noteArea.value ? '\n\n' : '') + "[Scanned Data]:\n" + text.trim();
+            status.innerHTML = "✅ Scan Successful";
+            // If in full screen, ensure it's visible
+            noteArea.dispatchEvent(new Event('input')); 
+        } else {
+            status.innerHTML = "⚠️ No text found. Try closer/brighter.";
+        }
+
         await worker.terminate();
     } catch (e) {
-        status.innerText = "❌ Scan Failed";
+        console.error("OCR Error:", e);
+        status.innerHTML = "❌ Scan Failed. Check lighting.";
+    } finally {
+        cameraInput.value = ""; // Clear input for next scan
     }
 }
 
+let recognition; // Global variable to track state
+
 function toggleDictation() {
     const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!Speech) return showToast("Not supported in this browser.");
-    const rec = new Speech();
-    rec.onresult = (e) => { 
-        document.getElementById('noteContent').value += " " + e.results[0][0].transcript; 
+    if (!Speech) return alert("Speech recognition is not supported in this browser.");
+
+    if (recognition) {
+        recognition.stop();
+        return;
+    }
+
+    recognition = new Speech();
+    recognition.lang = 'en-US';
+    recognition.continuous = false; // Stops when you stop talking
+    recognition.interimResults = false;
+
+    recognition.onstart = () => {
+        showToast("🎤 Listening for your lab notes...");
     };
-    rec.start();
-    showToast("Listening...");
+
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        const noteArea = document.getElementById('noteContent');
+        noteArea.value += (noteArea.value ? ' ' : '') + transcript;
+        showToast("✅ Added!");
+        // Refresh full screen view if needed
+    };
+
+    recognition.onerror = (event) => {
+        console.error("Speech Error:", event.error);
+        showToast("❌ Mic Error: " + event.error);
+    };
+
+    recognition.onend = () => {
+        recognition = null;
+    };
+
+    recognition.start();
 }
 
 function generateAIQuiz() {
