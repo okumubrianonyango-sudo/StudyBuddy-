@@ -152,6 +152,16 @@
             <button class="btn btn-success w-100 fw-bold shadow-sm" onclick="predictOutcome()">Predict Trend</button>
             <div id="predictionResult" class="mt-3 text-center"></div>
         </div>
+        <div id="flashcardTab" class="tab-content d-none container py-3">
+    <h4 class="fw-bold mb-3">Study Decks</h4>
+    <div class="d-flex justify-content-center gap-2 mb-3">
+         <button class="btn btn-outline-danger btn-sm" onclick="deleteCurrentCard()">
+            <i class="fas fa-trash me-1"></i> Delete This Card
+         </button>
+    </div>
+</div>
+
+
     </div> <!-- CLOSED AI TAB PROPERLY -->
 
  <!-- TAB 3: CHEM LAB -->
@@ -303,6 +313,14 @@
         <button class="btn btn-dark btn-sm text-center border-0" onclick="showTab('chemTab')">
             <span class="fs-4">🧪</span><br><small>Lab</small>
         </button>
+        <nav class="navbar navbar-dark bg-dark fixed-bottom shadow-lg">
+    <div class="container-fluid d-flex justify-content-around">
+        <button class="btn btn-dark btn-sm text-center border-0" onclick="showTab('flashcardTab')">
+            <span class="fs-4">🗂️</span><br><small>Cards</small>
+        </button>
+        
+        </div>
+</nav>
     </div>
 </nav>
 

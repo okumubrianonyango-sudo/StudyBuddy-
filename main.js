@@ -690,99 +690,117 @@ async function exportLogsToPDF() {
 }
 
 // ==========================================
-// 7. FLASHCARD ENGINE (FIXED)
+// CATEGORIZED FLASHCARD SYSTEM
 // ==========================================
-let thermoCards = JSON.parse(localStorage.getItem('myStudyCards')) || [
-    { q: "First Law of Thermodynamics", a: "Energy cannot be created or destroyed, only transformed (ΔU = Q - W)." },
-    { q: "Hess's Law", a: "The total enthalpy change for a reaction is the same regardless of the number of steps." },
-    { q: "Nitrogen Boiling Point", a: "Approximately -195.8°C (Used in fractional distillation)." }
-];
 
+let currentCategory = 'thermodynamics';
 let currentCardIndex = 0;
-let showingAnswer = false;
+let isShowingAnswer = false;
 
-function updateCard() {
-    const display = document.getElementById('card-text');
-    if (!display) return; 
-    
-    if (showingAnswer) {
-        display.innerText = thermoCards[currentCardIndex].a;
-        display.classList.add('text-info');
-    } else {
-        display.innerText = thermoCards[currentCardIndex].q;
-        display.classList.remove('text-info');
-    }
+// Initial Data Structure
+let flashcardData = JSON.parse(localStorage.getItem('studyBuddyCards')) || {
+    thermodynamics: [
+        { q: "First Law of Thermodynamics?", a: "Energy cannot be created or destroyed, only transformed." }
+    ],
+    organic: [
+        { q: "What is a Nucleophile?", a: "A chemical species that donates an electron pair to form a chemical bond." }
+    ],
+    general: [
+        { q: "Avogadro's Number?", a: "6.022 x 10^23 molecules/mol" }
+    ]
+};
+
+function switchDeck(category) {
+    currentCategory = category;
+    currentCardIndex = 0;
+    isShowingAnswer = false;
+    document.getElementById('target-deck-name').innerText = category;
+    updateCardUI();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    const cardElement = document.getElementById('flashcard');
-    if (cardElement) {
-        cardElement.addEventListener('click', () => {
-            showingAnswer = !showingAnswer;
-            updateCard();
-        });
-    }
-    updateCard();
-});
+function updateCardUI() {
+    const deck = flashcardData[currentCategory];
+    const display = document.getElementById('card-display-text');
+    const counter = document.getElementById('card-counter');
 
-function nextCard() {
-    currentCardIndex = (currentCardIndex + 1) % thermoCards.length;
-    showingAnswer = false;
-    updateCard();
-}
-
-function prevCard() {
-    currentCardIndex = (currentCardIndex - 1 + thermoCards.length) % thermoCards.length;
-    showingAnswer = false;
-    updateCard();
-}
-
-function addNewCard() {
-    alert("Button was clicked!"); // Add this line temporarily
-    const qInput = document.getElementById('new-q');
-    // ... rest of the code
-    const aInput = document.getElementById('new-a');
-
-    if (qInput.value.trim() !== "" && aInput.value.trim() !== "") {
-        thermoCards.push({ q: qInput.value, a: aInput.value });
-        localStorage.setItem('myStudyCards', JSON.stringify(thermoCards));
-
-        qInput.value = "";
-        aInput.value = "";
-        currentCardIndex = thermoCards.length - 1;
-        showingAnswer = false;
-        updateCard();
-        alert("Card saved permanently!");
-    } else {
-        alert("Please fill in both fields.");
-    }
-} // <--- The missing closing brace was added here!
-
-function resetCards() {
-    if(confirm("Delete all custom cards and reset to defaults?")) {
-        localStorage.removeItem('myStudyCards');
-        location.reload(); 
-    }
-}
-
-function deleteCurrentCard() {
-    if (thermoCards.length <= 1) {
-        alert("You must keep at least one card in your deck!");
+    if (deck.length === 0) {
+        display.innerText = "No cards in this deck yet!";
+        counter.innerText = "0 / 0";
         return;
     }
 
-    if (confirm("Are you sure you want to delete this card?")) {
-        thermoCards.splice(currentCardIndex, 1);
-        localStorage.setItem('myStudyCards', JSON.stringify(thermoCards));
+    const currentCard = deck[currentCardIndex];
+    display.innerText = isShowingAnswer ? currentCard.a : currentCard.q;
+    counter.innerText = `${currentCardIndex + 1} / ${deck.length}`;
+    
+    // Change color based on side
+    display.classList.toggle('text-primary', !isShowingAnswer);
+    display.classList.toggle('text-success', isShowingAnswer);
+}
 
-        if (currentCardIndex >= thermoCards.length) {
-            currentCardIndex = thermoCards.length - 1;
-        }
+function flipCard() {
+    isShowingAnswer = !isShowingAnswer;
+    updateCardUI();
+}
 
-        showingAnswer = false;
-        updateCard();
+function nextCard() {
+    const deck = flashcardData[currentCategory];
+    if (currentCardIndex < deck.length - 1) {
+        currentCardIndex++;
+        isShowingAnswer = false;
+        updateCardUI();
     }
 }
+
+function prevCard() {
+    if (currentCardIndex > 0) {
+        currentCardIndex--;
+        isShowingAnswer = false;
+        updateCardUI();
+    }
+}
+
+function addNewCard() {
+    const q = document.getElementById('new-q').value.trim();
+    const a = document.getElementById('new-a').value.trim();
+
+    if (!q || !a) return alert("Please fill both sides!");
+
+    // Add to the active category
+    flashcardData[currentCategory].push({ q, a });
+    
+    // Save to LocalStorage
+    localStorage.setItem('studyBuddyCards', JSON.stringify(flashcardData));
+
+    // Clear and Refresh
+    document.getElementById('new-q').value = "";
+    document.getElementById('new-a').value = "";
+    updateCardUI();
+    showToast(`Added to ${currentCategory}!`);
+    
+function deleteCurrentCard() {
+    const deck = flashcardData[currentCategory];
+    
+    if (deck.length === 0) return;
+
+    if (confirm(`Delete this ${currentCategory} card permanently?`)) {
+        // Remove the card from the specific category array
+        deck.splice(currentCardIndex, 1);
+
+        // Save the updated object to LocalStorage
+        localStorage.setItem('studyBuddyCards', JSON.stringify(flashcardData));
+
+        // Adjust index if we just deleted the last card in the list
+        if (currentCardIndex >= deck.length && currentCardIndex > 0) {
+            currentCardIndex = deck.length - 1;
+        }
+
+        isShowingAnswer = false;
+        updateCardUI();
+        showToast("Card deleted.");
+    }
+}}
+
 
 // Display the current date/time the app script initialized
 const updateEl = document.getElementById('last-update');
