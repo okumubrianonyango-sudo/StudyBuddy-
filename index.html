@@ -302,28 +302,19 @@
 </div> <!-- End Container -->
 
 <!-- Bottom Navigation -->
-<nav class="navbar navbar-dark bg-dark fixed-bottom shadow-lg">
-    <div class="container-fluid d-flex justify-content-around">
-        <button class="btn btn-dark btn-sm text-center border-0" onclick="showTab('notesTab')">
-            <span class="fs-4">📝</span><br><small>Logs</small>
-        </button>
-        <button class="btn btn-dark btn-sm text-center border-0" onclick="showTab('aiTab')">
-            <span class="fs-4">🤖</span><br><small>AI Tools</small>
-        </button>
-        <button class="btn btn-dark btn-sm text-center border-0" onclick="showTab('chemTab')">
+<<nav class="navbar navbar-dark bg-dark fixed-bottom shadow-lg">
+    <div class="container-fluid d-flex justify-content-between px-3">
+        <button class="btn btn-dark btn-sm text-center border-0 flex-fill" onclick="showTab('chemTab')">
             <span class="fs-4">🧪</span><br><small>Lab</small>
         </button>
-        <nav class="navbar navbar-dark bg-dark fixed-bottom shadow-lg">
-    <div class="container-fluid d-flex justify-content-around">
-        <button class="btn btn-dark btn-sm text-center border-0" onclick="showTab('flashcardTab')">
-            <span class="fs-4">🗂️</span><br><small>Cards</small>
+        <button class="btn btn-dark btn-sm text-center border-0 flex-fill" onclick="showTab('notesTab')">
+            <span class="fs-4">📝</span><br><small>Logs</small>
         </button>
-        
-        </div>
-</nav>
+        <button class="btn btn-dark btn-sm text-center border-0 flex-fill" onclick="showTab('aiTab')">
+            <span class="fs-4">🤖</span><br><small>AI</small>
+        </button>
+        <button class="btn btn-dark btn-sm text-center border-0 flex-fill" onclick="showTab('flashcardTab')">
+            <span class="fs-4">📇</span><br><small>Cards</small>
+        </button>
     </div>
 </nav>
-
-<script src="main.js"></script>
-</body>
-</html>
