@@ -799,8 +799,8 @@ function deleteCurrentCard() {
         updateCardUI();
         showToast("Card deleted.");
     }
-}}
-
+}
+}
 
 // Display the current date/time the app script initialized
 const updateEl = document.getElementById('last-update');
