@@ -569,7 +569,9 @@ let currentCategory = 'thermodynamics';
 let currentCardIndex = 0;
 let isShowingAnswer = false;
 
-let flashcardData = JSON.parse(localStorage.getItem('studyBuddyCards')) || {
+let flashcardData = { 
+    // ... all your new thermo, organic, general cards here ...
+
     thermodynamics: [
         { q: "What is Enthalpy (H)?", a: "The total heat content of a system at constant pressure." },
         { q: "What is the 1st Law of Thermodynamics?", a: "Energy cannot be created or destroyed, only transformed." }
@@ -590,7 +592,9 @@ function switchDeck(category) {
     isShowingAnswer = false;
     
     const deckNameEl = document.getElementById('target-deck-name');
-    if (deckNameEl) deckNameEl.innerText = category.charAt(0).toUpperCase() + category.slice(1);
+    if (deckNameEl) {
+        deckNameEl.innerText = category.charAt(0).toUpperCase() + category.slice(1);
+    }
     
     updateCardUI();
 }
@@ -612,6 +616,7 @@ function updateCardUI() {
     display.innerText = isShowingAnswer ? currentCard.a : currentCard.q;
     counter.innerText = `${currentCardIndex + 1} / ${deck.length}`;
     
+    // This adds a nice color effect: Blue for questions, Green for answers
     display.classList.toggle('text-primary', !isShowingAnswer);
     display.classList.toggle('text-success', isShowingAnswer);
 }
@@ -679,4 +684,7 @@ const updateEl = document.getElementById('last-update');
 if(updateEl) {
     updateEl.innerText = "Updated: " + new Date().toLocaleString();
 }
-    
+    function showToast(message) {
+    console.log(message); // For debugging
+    alert(message); // Simple temporary replacement
+}
